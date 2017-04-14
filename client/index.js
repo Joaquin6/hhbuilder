@@ -1,4 +1,4 @@
-var builder, houseForm, addBtn, submitBtn;
+var builder, debugCont, houseForm, addBtn, submitBtn;
 
 function Person(params) {
 	this.age = params.age;
@@ -14,9 +14,10 @@ function initialize() {
 }
 
 function setupMainElements() {
-	builder = document.getElementsByClassName("builder")[0];
-	houseForm = document.getElementsByTagName("form")[0];
+	builder = document.getElementsByClassName('builder')[0];
+	houseForm = document.getElementsByTagName('form')[0];
 	houseForm.setAttribute('id', 'houseform');
+	debugCont = builder.nextElementSibling;
 }
 
 function handleFormSubmission() {
@@ -30,6 +31,7 @@ function handleFormSubmission() {
 		} else {
 			console.log('Form Inputs are Valid!');
 			console.log(validInputs);
+			debugVisibility(true, validInputs);
 			request('PUT', validInputs, {
 				path: '/houseform'
 			});
@@ -46,6 +48,7 @@ function handleFormSubmission() {
 		} else {
 			console.log('Form Inputs are Valid!');
 			console.log(validInputs);
+			debugVisibility(true, validInputs);
 			request('POST', validInputs, {
 				path: '/houseform'
 			});
@@ -67,56 +70,47 @@ function getFormBtn(type) {
 }
 
 function validateFormInputs(elements) {
-	var title = 'Element Value: ', name = '';
+	var title = 'Element Value: ', name = '', key = '';
 	var inputs = {
 		query: ''
 	}, val, x, element;
+
 	for (x = 0; x < elements.length; x++) {
 		element = elements[x];
 		name = element.name || '';
-		if (name) {
-			switch(name) {
-				case 'age':
-					val = parseInt(element.value);
-					if (val < 1)
-						return false;
-					inputs.age = val;
 
-					if (inputs.query)
-						inputs.query += '&age=' + val;
-					else
-						inputs.query += 'age=' + val;
+		if (!name) continue;
 
-					title = 'Age Value: ';
-					break;
-				case 'rel':
-					val = element.value;
-					if (!val)
-						return false;
-					inputs.relationship = val;
-
-					if (inputs.query)
-						inputs.query += '&relationship=' + val;
-					else
-						inputs.query += 'relationship=' + val;
-
-					title = 'Relationship Value: ';
-					break;
-				case 'smoker':
-					val = element.value = 'off';
-					if (element.checked)
-						val = element.value = 'on';
-					inputs.smoker = val;
-
-					if (inputs.query)
-						inputs.query += '&smoker=' + val;
-					else
-						inputs.query += 'smoker=' + val;
-
-					title = 'Smoker Value: ';
-					break;
-			}
+		switch (name) {
+			case 'age':
+				val = parseInt(element.value);
+				if (val < 1)
+					return false;
+				inputs.age = val;
+				key = 'age';
+				title = 'Age Value: ';
+				break;
+			case 'rel':
+				val = element.value;
+				if (!val)
+					return false;
+				inputs.relationship = val;
+				key = 'relationship';
+				title = 'Relationship Value: ';
+				break;
+			case 'smoker':
+				val = element.value = 'off';
+				if (element.checked)
+					val = element.value = 'on';
+				inputs.smoker = val;
+				key = 'smoker';
+				title = 'Smoker Value: ';
+				break;
 		}
+
+		if (inputs.query)
+			inputs.query += '&';
+		inputs.query += key + '=' + val;
 	}
 
 	if (console.table) {
@@ -147,4 +141,15 @@ function request(method, params, options) {
 	}
 	/** Send the Stringified JSON Object */
 	http.send(JSON.stringify(params));
+}
+
+function debugVisibility(show, context) {
+	show = show || true;
+	if (show) {
+		debugCont.innerText = JSON.stringify(context);
+		debugCont.style.display = "block";
+	} else {
+		debugCont.innerText = '';
+		debugCont.style.display = "none";
+	}
 }
