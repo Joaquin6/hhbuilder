@@ -147,9 +147,9 @@ function debugVisibility(show, context) {
 	show = show || true;
 	if (show) {
 		debugCont.innerText = JSON.stringify(context);
-		debugCont.style.display = "block";
+		debugCont.style.display = 'block';
 	} else {
 		debugCont.innerText = '';
-		debugCont.style.display = "none";
+		debugCont.style.display = 'none';
 	}
 }
