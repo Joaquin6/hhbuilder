@@ -144,9 +144,13 @@ function request(method, params, options) {
 }
 
 function debugVisibility(show, context) {
-	show = show || true;
+	show = (show !== undefined) ? show : true;
+	var text = debugCont.innerText;
 	if (show) {
-		debugCont.innerText = JSON.stringify(context);
+		if (text)
+			debugCont.innerText = text + "\n" + JSON.stringify(context);
+		else
+			debugCont.innerText = JSON.stringify(context);
 		debugCont.style.display = 'block';
 	} else {
 		debugCont.innerText = '';
