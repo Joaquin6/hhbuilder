@@ -22,6 +22,7 @@ function setupMainElements() {
 function handleFormSubmission() {
 	addBtn = getFormBtn('add');
 	addBtn.addEventListener('click', function(e) {
+		e.preventDefault();
 		var validInputs = validateFormInputs(houseForm.elements);
 		if (!validInputs) {
 			console.log('Form Inputs are Invalid');
@@ -29,14 +30,15 @@ function handleFormSubmission() {
 		} else {
 			console.log('Form Inputs are Valid!');
 			console.log(validInputs);
-			request('POST', validInputs, {
-				path: '/houseform/add'
+			request('PUT', validInputs, {
+				path: '/houseform'
 			});
 		}
 	});
 
 	submitBtn = getFormBtn('submit');
 	submitBtn.addEventListener('click', function(e) {
+		e.preventDefault();
 		var validInputs = validateFormInputs(houseForm.elements);
 		if (!validInputs) {
 			console.log('Form Inputs are Invalid');
@@ -45,7 +47,7 @@ function handleFormSubmission() {
 			console.log('Form Inputs are Valid!');
 			console.log(validInputs);
 			request('POST', validInputs, {
-				path: '/houseform/submit'
+				path: '/houseform'
 			});
 		}
 	});
@@ -128,21 +130,21 @@ function validateFormInputs(elements) {
 function request(method, params, options) {
 	/** @type {String} Set method to post by default if not specified. */
 	method = method || 'POST';
+
 	var http = new XMLHttpRequest();
 	var url = window.location.origin + options.path;
 
 	console.log('XMLHttpRequest Endpoint: ', url);
 	http.open(method, url, true);
-
 	/** Send the proper header information along with the request */
-	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
+	http.setRequestHeader('Content-type', 'application/json');
 	/** Act on State Change */
 	http.onreadystatechange = function() {
 		if (http.readyState === 4 && http.status === 200) {
-			console.log(JSON.parse(http.responseText));
+			var json = JSON.parse(http.responseText);
+			console.log(json);
 		}
 	}
-
-	http.send(params.query);
+	/** Send the Stringified JSON Object */
+	http.send(JSON.stringify(params));
 }
