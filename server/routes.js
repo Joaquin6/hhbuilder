@@ -50,8 +50,7 @@ router.route('/houseform')
 	})
 	.delete(function(req, res) {
 		var person = req.body;
-		console.log('DELETING PERSON');
-		console.log(person);
+
 		deletePersonFromList(person);
 
 		var respond = {
