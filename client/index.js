@@ -2,6 +2,7 @@ var builder, debugCont, houseHoldList, houseForm, addBtn, submitBtn;
 
 window.onload = initialize;
 
+/** Starting Point */
 function initialize() {
 	setupMainElements();
 	handleFormSubmission();
@@ -24,6 +25,7 @@ function setupMainElements() {
 }
 
 function handleFormSubmission() {
+	/** Handler for `Add` Button Click */
 	addBtn = getFormBtn('add');
 	addBtn.addEventListener('click', function(e) {
 		e.preventDefault();
@@ -43,26 +45,23 @@ function handleFormSubmission() {
 		}
 	});
 
+	/** Handler for `Submit` Button Click */
 	submitBtn = getFormBtn('submit');
 	submitBtn.addEventListener('click', function(e) {
 		e.preventDefault();
-		var validInputs = validateFormInputs(houseForm.elements);
-		if (!validInputs) {
-			console.log('Form Inputs are Invalid');
-			console.log(validInputs);
-		} else {
-			console.log('Form Inputs are Valid!');
-			console.log(validInputs);
-
-			request('POST', validInputs, {
-				path: '/houseform'
-			}, function(res) {
-				debugVisibility(true, res.data);
-			});
-		}
+		request('GET', null, {
+			path: '/houseform'
+		}, function(res) {
+			debugVisibility(true, res.data);
+		});
 	});
 }
 
+/**
+ * Upon browser refresh or the server hasnt been restarted,
+ * the data will still be there. Therefore, we confirm if there is
+ * existing data, we make that request and add the LIs to the list.
+ */
 function checkExistingData() {
 	request('GET', null, {
 		path: '/houseform'
