@@ -1,11 +1,10 @@
-var data = {};
-
 /**
  * Utility object with globally accessible methods.
  * In other terms, `helpers`.
  * @type  {Object}
  */
 var Utility = {
+	uniqueId: 1,
 	/**
 	 * Capitalize the first letter in the string
 	 * @param   {String}  string  Original string to be modified
@@ -13,6 +12,10 @@ var Utility = {
 	 */
 	capitalizeFirstLetter: function(string) {
 		return string.charAt(0).toUpperCase() + string.slice(1);
+	},
+	generateUniqueId: function() {
+		this.uniqueId++;
+		return this.uniqueId;
 	},
 	/**
 	 * [formatJSON description]
@@ -31,34 +34,14 @@ var Utility = {
 		handler = handler || null;
 		indentation = indentation || 4;
 		return JSON.stringify(json, handler, indentation);
-	},
-	httpRequest: function request(method, params, options, callback) {
-		/** @type {String} Set method to post by default if not specified. */
-		method = method || 'POST';
-
-		var http = new XMLHttpRequest();
-		var url = window.location.origin + options.path;
-
-		console.log('XMLHttpRequest Endpoint: ', url);
-		http.open(method, url, true);
-		/** Send the proper header information along with the request */
-		http.setRequestHeader('Content-type', 'application/json');
-		/** Act on State Change */
-		http.onreadystatechange = function() {
-			if (http.readyState === 4 && http.status === 200) {
-				var json = JSON.parse(http.responseText);
-				console.log(json);
-				if (callback)
-					callback(json);
-			}
-		}
-		if (params)
-			params = JSON.stringify(params);
-		http.send(params);
 	}
 };
 
-var hhList = {
+/**
+ * List object with methods to modify the list in the DOM
+ * @type {Object}
+ */
+var list = {
 	element: null,
 	initialize: function() {
 		this.element = document.getElementsByClassName('household')[0];
@@ -66,8 +49,8 @@ var hhList = {
 	},
 	add: function(data) {
 		console.log('Adding Person to Household List');
+		data.id = Utility.generateUniqueId();
 		var listItem = this.createItem(data);
-		/** Append <li> to <ol> */
 		this.element.appendChild(listItem);
 	},
 	/**
@@ -104,6 +87,23 @@ var hhList = {
 
 		return listItem;
 	},
+	get: function(id) {
+		id = id || '*';
+		var children = this.element.children, listObj = [], child, childInputs;
+		for (var x = 0; x < children.length; x++) {
+			child = children[x];
+			childInputs = {
+				id: child.getAttribute('data-uniqueId'),
+				age: child.getAttribute('data-age'),
+				relationship: child.getAttribute('data-relationship')
+			};
+			if (id !== '*' && id === childInputs.id) {
+				return childInputs;
+			}
+			listObj.push(childInputs);
+		}
+		return listObj;
+	},
 	remove: function(data) {
 		console.log('Deleting ' + data.id + ' from Household List');
 		var item = document.getElementById('person' + data.id);
@@ -135,30 +135,23 @@ var hhList = {
 	}
 };
 
-var hhForm = {
+/**
+ * Form object with methods to validate form inputs and behavior
+ * @type {Object}
+ */
+var form = {
 	element: null,
-	addButton: {
-		element: null
-	},
-	submitButton: {
-		element: null
-	},
 	initialize: function() {
 		this.element = document.getElementsByTagName('form')[0];
 		this.element.setAttribute('id', 'houseform');
 		this.element.setAttribute('style', 'float:left; margin:0; width:45%;');
-
-		this.addButton.element = this.getButton('add');
-		this.submitButton.element = this.getButton('submit');
-
 		/** Setup the initial event handlers */
 		this.setupHandlers();
 	},
 	setupHandlers: function() {
 		var self = this;
 		/** Handler for `Add` Button Click */
-		var btn = this.addButton.element;
-		btn.addEventListener('click', function(e) {
+		this.getButton('add').addEventListener('click', function(e) {
 			e.preventDefault();
 			var validInputs = self.validateInputs();
 			if (!validInputs) {
@@ -167,15 +160,16 @@ var hhForm = {
 			} else {
 				console.log('Form Inputs are Valid!');
 				console.log(validInputs);
-				hhList.add(validInputs);
+				list.add(validInputs);
 			}
 		});
 
 		/** Handler for `Submit` Button Click */
-		btn = this.submitButton.element;
-		btn.addEventListener('click', function(e) {
+		this.getButton('submit').addEventListener('click', function(e) {
 			e.preventDefault();
-			hhDebug.show(data);
+			hhDebug.show({
+				list: list.get('*')
+			});
 		});
 	},
 	highlightInput: function(element, type) {
@@ -275,7 +269,7 @@ var hhDebug = {
 
 /** @type {Function} Initial Trigger - Starting Point */
 window.onload = function() {
-	hhList.initialize();
-	hhForm.initialize();
+	list.initialize();
+	form.initialize();
 	hhDebug.initialize();
 };
