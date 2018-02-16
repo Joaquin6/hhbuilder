@@ -1,3 +1,5 @@
+var data = {};
+
 /**
  * Utility object with globally accessible methods.
  * In other terms, `helpers`.
@@ -61,7 +63,6 @@ var hhList = {
 	initialize: function() {
 		this.element = document.getElementsByClassName('household')[0];
 		this.element.setAttribute('style', 'float:right; margin:0; width:45%;');
-		this.__checkExistingData();
 	},
 	add: function(data) {
 		console.log('Adding Person to Household List');
@@ -128,32 +129,9 @@ var hhList = {
 				relationship: parent.getAttribute('data-relationship')
 			};
 			console.log(validInputs);
-
-			Utility.httpRequest('DELETE', validInputs, {
-				path: '/houseform'
-			}, function(res) {
-				self.remove(res.deleted);
-			});
+			self.remove(validInputs);
 		});
 		return deleteBtn;
-	},
-	/**
-	 * Upon browser refresh or the server hasnt been restarted,
-	 * the data will still be there. Therefore, we confirm if there is
-	 * existing data, we make that Utility.httpRequest and add the LIs to the list.
-	 */
-	__checkExistingData: function() {
-		var self = this;
-		Utility.httpRequest('GET', null, {
-			path: '/houseform'
-		}, function(res) {
-			if (res.data.count.total > 0) {
-				var existingListItems = res.data.list;
-				for (var d = 0; d < existingListItems.length; d++) {
-					self.add(existingListItems[d]);
-				}
-			}
-		});
 	}
 };
 
@@ -189,12 +167,7 @@ var hhForm = {
 			} else {
 				console.log('Form Inputs are Valid!');
 				console.log(validInputs);
-
-				Utility.httpRequest('PUT', validInputs, {
-					path: '/houseform'
-				}, function(res) {
-					hhList.add(res.added);
-				});
+				hhList.add(validInputs);
 			}
 		});
 
@@ -202,11 +175,7 @@ var hhForm = {
 		btn = this.submitButton.element;
 		btn.addEventListener('click', function(e) {
 			e.preventDefault();
-			Utility.httpRequest('GET', null, {
-				path: '/houseform'
-			}, function(res) {
-				hhDebug.show(res.data);
-			});
+			hhDebug.show(data);
 		});
 	},
 	highlightInput: function(element, type) {
